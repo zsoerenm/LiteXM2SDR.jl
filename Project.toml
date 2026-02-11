@@ -1,0 +1,29 @@
+name = "LiteXM2SDR"
+uuid = "4766cb4b-ed22-46a0-83c2-3ca655ab0802"
+version = "0.1.0"
+authors = ["Soeren Schoenbrod <soeren.schoenbrod@juliahub.com>"]
+
+[deps]
+Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
+FixedSizeArrays = "3821ddf9-e5b5-40d5-8e25-6813ab96b5e2"
+Mmap = "a63ad114-7e13-5084-954f-fe012c677804"
+PipeChannels = "316ea068-b8d4-4418-b34f-158552ec34f5"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+SignalChannels = "59ec5e11-ed95-4167-ad38-35055440f478"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
+[compat]
+Artifacts = "1"
+FixedSizeArrays = "1.2.0"
+Mmap = "1.11.0"
+PipeChannels = "0.1.1"
+Printf = "1.11.0"
+SignalChannels = "6.2"
+Unitful = "1.23.1"
+julia = "1.10"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

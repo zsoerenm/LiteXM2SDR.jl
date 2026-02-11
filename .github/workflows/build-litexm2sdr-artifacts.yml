@@ -136,7 +136,7 @@ jobs:
 
           # Get version from environment or use default
           version = get(ENV, "VERSION", "v0.1.0")
-          repo = get(ENV, "GITHUB_REPOSITORY", "JuliaComputing/LiteXM2SDR.jl")
+          repo = get(ENV, "GITHUB_REPOSITORY", "zsoerenm/LiteXM2SDR.jl")
 
           # Generate TOML
           toml_lines = String[]

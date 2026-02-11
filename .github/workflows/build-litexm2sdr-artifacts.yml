@@ -14,14 +14,11 @@ on:
 jobs:
   build:
     name: Build all platforms
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout LiteXM2SDR.jl
         uses: actions/checkout@v6
-
-      - name: Set isolated Julia depot
-        run: echo "JULIA_DEPOT_PATH=$RUNNER_TEMP/julia-depot" >> "$GITHUB_ENV"
 
       - name: Setup Julia 1.7
         uses: julia-actions/setup-julia@v2

@@ -105,10 +105,24 @@ jobs:
         with:
           version: '1'
 
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # Extract from tag (litexm2sdr-v0.1.0 -> v0.1.0)
+            VERSION="${GITHUB_REF_NAME#litexm2sdr-}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=litexm2sdr-$VERSION" >> $GITHUB_OUTPUT
+
       - name: Install JSON3
         run: julia -e 'using Pkg; Pkg.add("JSON3")'
 
       - name: Generate Artifacts.toml
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           echo "Generating Artifacts.toml..."
 
@@ -133,8 +147,8 @@ jobs:
             "aarch64-linux-musl" => (arch="aarch64", os="linux", libc="musl"),
           )
 
-          # Get version from environment or use default
-          version = get(ENV, "VERSION", "v0.1.0")
+          # Get version from environment
+          version = ENV["VERSION"]
           repo = get(ENV, "GITHUB_REPOSITORY", "zsoerenm/LiteXM2SDR.jl")
 
           # Generate TOML
@@ -162,18 +176,6 @@ jobs:
           println("Generated Artifacts.toml.new")
           println(read("Artifacts.toml.new", String))
           '
-
-      - name: Determine version
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ github.event.inputs.version }}"
-          else
-            # Extract from tag (litexm2sdr-v0.1.0 -> v0.1.0)
-            VERSION="${GITHUB_REF_NAME#litexm2sdr-}"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=litexm2sdr-$VERSION" >> $GITHUB_OUTPUT
 
       - name: Finalize release assets
         run: |

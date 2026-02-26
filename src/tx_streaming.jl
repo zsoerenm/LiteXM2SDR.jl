@@ -1,32 +1,30 @@
 # LiteX M2SDR TX (transmit) shared memory streaming
 
-# TX uses a different header layout (v1 style with more fields for TX-specific stats)
+# TX uses the unified SHM header layout (matching m2sdr_shm.h)
 # TX Header layout (first 64 bytes, cache-line aligned):
-# Bytes 0-7:   write_index (UInt64) - next slot to write
-# Bytes 8-15:  read_index (UInt64) - next slot to read
-# Bytes 16-23: chunks_written (UInt64) - total chunks written
-# Bytes 24-31: chunks_read (UInt64) - total chunks read
-# Bytes 32-35: chunk_size (UInt32) - samples per chunk (per channel)
-# Bytes 36-39: sample_size (UInt32) - bytes per sample (4 for Complex{Int16})
-# Bytes 40-43: num_slots (UInt32) - number of slots in buffer
-# Bytes 44-45: num_channels (UInt16) - number of channels (1 or 2)
-# Bytes 46-47: flags (UInt16) - control flags (bit 0 = writer_done)
-# Bytes 48-55: underflow_count (UInt64) - TX underflows
-# Bytes 56-63: buffer_empty_count (UInt64) - TX: times C found SHM empty (sent zeros)
+# Bytes  0-7:   write_index (UInt64) - next slot to write
+# Bytes  8-15:  read_index (UInt64) - next slot to read
+# Bytes 16-23:  error_count (UInt64) - TX: DMA underflows
+# Bytes 24-27:  chunk_size (UInt32) - samples per chunk (per channel)
+# Bytes 28-31:  num_slots (UInt32) - number of slots in buffer
+# Bytes 32-33:  num_channels (UInt16) - number of channels (1 or 2)
+# Bytes 34-35:  flags (UInt16) - control flags (bit 0 = writer_done)
+# Bytes 36-39:  sample_size (UInt32) - bytes per sample (4 for Complex{Int16})
+# Bytes 40-47:  buffer_stall_count (UInt64) - TX: times C found SHM empty (sent zeros)
+# Bytes 48-63:  reserved (16 bytes)
 const TX_SHM_HEADER_SIZE = 64
 
 # TX Header field offsets (1-indexed for Julia pointer arithmetic)
+# These match the unified layout in m2sdr_shm.h
 const TX_OFFSET_WRITE_INDEX = 1
 const TX_OFFSET_READ_INDEX = 9
-const TX_OFFSET_CHUNKS_WRITTEN = 17
-const TX_OFFSET_CHUNKS_READ = 25
-const TX_OFFSET_CHUNK_SIZE = 33
+const TX_OFFSET_ERROR_COUNT = 17
+const TX_OFFSET_CHUNK_SIZE = 25
+const TX_OFFSET_NUM_SLOTS = 29
+const TX_OFFSET_NUM_CHANNELS = 33
+const TX_OFFSET_FLAGS = 35
 const TX_OFFSET_SAMPLE_SIZE = 37
-const TX_OFFSET_NUM_SLOTS = 41
-const TX_OFFSET_NUM_CHANNELS = 45
-const TX_OFFSET_FLAGS = 47
-const TX_OFFSET_UNDERFLOW_COUNT = 49
-const TX_OFFSET_BUFFER_EMPTY_COUNT = 57
+const TX_OFFSET_BUFFER_STALL = 41
 
 const TX_FLAG_WRITER_DONE = UInt16(1)
 
@@ -152,15 +150,15 @@ function write_to_litex_m2sdr(
     shm = Mmap.mmap(io, Vector{UInt8}, total_size)
     # Note: We don't close io - the file handle must stay open for the mmap to remain valid
 
-    # Initialize header
+    # Initialize header (unified layout matching m2sdr_shm.h)
     fill!(view(shm, 1:TX_SHM_HEADER_SIZE), 0)
     unsafe_store!(Ptr{UInt32}(pointer(shm, TX_OFFSET_CHUNK_SIZE)), UInt32(chunk_size))
+    unsafe_store!(Ptr{UInt32}(pointer(shm, TX_OFFSET_NUM_SLOTS)), UInt32(num_slots))
+    unsafe_store!(Ptr{UInt16}(pointer(shm, TX_OFFSET_NUM_CHANNELS)), UInt16(N))
     unsafe_store!(
         Ptr{UInt32}(pointer(shm, TX_OFFSET_SAMPLE_SIZE)),
         UInt32(sizeof(Complex{Int16})),
     )
-    unsafe_store!(Ptr{UInt32}(pointer(shm, TX_OFFSET_NUM_SLOTS)), UInt32(num_slots))
-    unsafe_store!(Ptr{UInt16}(pointer(shm, TX_OFFSET_NUM_CHANNELS)), UInt16(N))
 
     @info "Created TX shared memory ring buffer" path = shm_path chunk_size num_channels = N num_slots
 
@@ -240,7 +238,7 @@ function write_to_litex_m2sdr(
             for chunk in input_channel
                 # Check for underflows reported by C process
                 current_underflow_count =
-                    unsafe_load(Ptr{UInt64}(pointer(shm, TX_OFFSET_UNDERFLOW_COUNT)))
+                    unsafe_load(Ptr{UInt64}(pointer(shm, TX_OFFSET_ERROR_COUNT)))
                 if current_underflow_count > last_underflow_count
                     time_str = @sprintf("%.2fs", total_samples_written / sample_rate_hz)
                     if isopen(warning_channel) &&
@@ -255,7 +253,7 @@ function write_to_litex_m2sdr(
 
                 # Check for buffer empty events (C sent zeros because Julia was slow)
                 current_buffer_empty_count =
-                    unsafe_load(Ptr{UInt64}(pointer(shm, TX_OFFSET_BUFFER_EMPTY_COUNT)))
+                    unsafe_load(Ptr{UInt64}(pointer(shm, TX_OFFSET_BUFFER_STALL)))
                 if current_buffer_empty_count > last_buffer_empty_count
                     new_events = current_buffer_empty_count - last_buffer_empty_count
                     time_str = @sprintf("%.2fs", total_samples_written / sample_rate_hz)
@@ -350,10 +348,6 @@ function write_to_litex_m2sdr(
                 )
                 chunks_written += 1
                 total_samples_written += chunk_size
-                unsafe_store!(
-                    Ptr{UInt64}(pointer(shm, TX_OFFSET_CHUNKS_WRITTEN)),
-                    chunks_written,
-                )
 
                 # Push stats update (non-blocking if channel is full)
                 if isopen(stats_channel) &&

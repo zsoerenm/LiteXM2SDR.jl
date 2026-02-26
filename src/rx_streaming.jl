@@ -56,17 +56,19 @@ num_channels(::LitexM2SDRChannel{N}) where {N} = N
 num_channels(::Type{LitexM2SDRChannel{N}}) where {N} = N
 
 # =============================================================================
-# RX Header Layout (64 bytes, matching m2sdr_rx_stream_shm.c)
+# Unified SHM Header Layout (64 bytes, matching m2sdr_shm.h)
 # =============================================================================
 #
-# Bytes 0-7:   write_index (UInt64) - next slot to write (producer)
-# Bytes 8-15:  read_index (UInt64) - next slot to read (consumer)
-# Bytes 16-23: overflow_count (UInt64) - DMA overflows detected
-# Bytes 24-27: chunk_size (UInt32) - samples per chunk (per channel)
-# Bytes 28-31: num_slots (UInt32) - number of slots in buffer
-# Bytes 32-33: num_channels (UInt16) - 1 or 2
-# Bytes 34-35: flags (UInt16) - bit 0 = writer_done
-# Bytes 36-63: reserved
+# Bytes  0-7:   write_index (UInt64) - next slot to write (producer)
+# Bytes  8-15:  read_index (UInt64) - next slot to read (consumer)
+# Bytes 16-23:  error_count (UInt64) - RX: DMA overflows; TX: DMA underflows
+# Bytes 24-27:  chunk_size (UInt32) - samples per chunk (per channel)
+# Bytes 28-31:  num_slots (UInt32) - number of slots in buffer
+# Bytes 32-33:  num_channels (UInt16) - 1 or 2
+# Bytes 34-35:  flags (UInt16) - bit 0 = writer_done
+# Bytes 36-39:  sample_size (UInt32) - bytes per sample (4 for Complex{Int16})
+# Bytes 40-47:  buffer_stall_count (UInt64) - RX: buffer-full waits; TX: buffer-empty events
+# Bytes 48-63:  reserved (16 bytes)
 #
 # No per-chunk header - pure sample data follows immediately
 const SHM_HEADER_SIZE = 64
@@ -74,11 +76,13 @@ const SHM_HEADER_SIZE = 64
 # Header field offsets (1-indexed for Julia pointer arithmetic)
 const OFFSET_WRITE_INDEX = 1
 const OFFSET_READ_INDEX = 9
-const OFFSET_OVERFLOW_COUNT = 17
+const OFFSET_ERROR_COUNT = 17
 const OFFSET_CHUNK_SIZE = 25
 const OFFSET_NUM_SLOTS = 29
 const OFFSET_NUM_CHANNELS = 33
 const OFFSET_FLAGS = 35
+const OFFSET_SAMPLE_SIZE = 37
+const OFFSET_BUFFER_STALL = 41
 
 const FLAG_WRITER_DONE = UInt16(1)
 
@@ -119,7 +123,7 @@ end
 end
 
 @inline function get_overflow_count(shm::SharedMemoryRingBuffer)
-    unsafe_load(Ptr{UInt64}(pointer(shm.data, OFFSET_OVERFLOW_COUNT)))
+    unsafe_load(Ptr{UInt64}(pointer(shm.data, OFFSET_ERROR_COUNT)))
 end
 
 @inline function get_flags(shm::SharedMemoryRingBuffer)

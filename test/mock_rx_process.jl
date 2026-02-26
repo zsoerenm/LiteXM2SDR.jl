@@ -13,15 +13,16 @@
 
 using Mmap
 
-# RX Header layout (must match rx_streaming.jl)
+# Unified SHM Header layout (must match rx_streaming.jl / m2sdr_shm.h)
 const SHM_HEADER_SIZE = 64
 const OFFSET_WRITE_INDEX = 1       # UInt64
 const OFFSET_READ_INDEX = 9        # UInt64
-const OFFSET_OVERFLOW_COUNT = 17   # UInt64
+const OFFSET_ERROR_COUNT = 17      # UInt64 (RX: overflow_count)
 const OFFSET_CHUNK_SIZE = 25       # UInt32
 const OFFSET_NUM_SLOTS = 29        # UInt32
 const OFFSET_NUM_CHANNELS = 33     # UInt16
 const OFFSET_FLAGS = 35            # UInt16
+const OFFSET_SAMPLE_SIZE = 37      # UInt32
 const FLAG_WRITER_DONE = UInt16(1)
 
 function parse_args(args)
@@ -60,6 +61,7 @@ function main()
     unsafe_store!(Ptr{UInt32}(pointer(shm, OFFSET_CHUNK_SIZE)), UInt32(chunk_size))
     unsafe_store!(Ptr{UInt32}(pointer(shm, OFFSET_NUM_SLOTS)), UInt32(num_slots))
     unsafe_store!(Ptr{UInt16}(pointer(shm, OFFSET_NUM_CHANNELS)), UInt16(num_channels))
+    unsafe_store!(Ptr{UInt32}(pointer(shm, OFFSET_SAMPLE_SIZE)), UInt32(sizeof(Complex{Int16})))
 
     # Write chunks with sequential data
     sample_counter = Int16(1)

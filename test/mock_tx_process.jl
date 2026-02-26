@@ -14,19 +14,17 @@
 
 using Mmap
 
-# TX Header layout (must match tx_streaming.jl)
+# Unified SHM Header layout (must match tx_streaming.jl / m2sdr_shm.h)
 const TX_SHM_HEADER_SIZE = 64
-const TX_OFFSET_WRITE_INDEX = 1          # UInt64
-const TX_OFFSET_READ_INDEX = 9           # UInt64
-const TX_OFFSET_CHUNKS_WRITTEN = 17      # UInt64
-const TX_OFFSET_CHUNKS_READ = 25         # UInt64
-const TX_OFFSET_CHUNK_SIZE = 33          # UInt32
-const TX_OFFSET_SAMPLE_SIZE = 37         # UInt32
-const TX_OFFSET_NUM_SLOTS = 41           # UInt32
-const TX_OFFSET_NUM_CHANNELS = 45        # UInt16
-const TX_OFFSET_FLAGS = 47               # UInt16
-const TX_OFFSET_UNDERFLOW_COUNT = 49     # UInt64
-const TX_OFFSET_BUFFER_EMPTY_COUNT = 57  # UInt64
+const TX_OFFSET_WRITE_INDEX = 1      # UInt64
+const TX_OFFSET_READ_INDEX = 9       # UInt64
+const TX_OFFSET_ERROR_COUNT = 17     # UInt64 (TX: underflow_count)
+const TX_OFFSET_CHUNK_SIZE = 25      # UInt32
+const TX_OFFSET_NUM_SLOTS = 29       # UInt32
+const TX_OFFSET_NUM_CHANNELS = 33    # UInt16
+const TX_OFFSET_FLAGS = 35           # UInt16
+const TX_OFFSET_SAMPLE_SIZE = 37     # UInt32
+const TX_OFFSET_BUFFER_STALL = 41    # UInt64 (TX: buffer_empty_count)
 const TX_FLAG_WRITER_DONE = UInt16(1)
 
 function parse_args(args)

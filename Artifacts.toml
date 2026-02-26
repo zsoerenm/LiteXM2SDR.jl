@@ -5,42 +5,42 @@
 arch = "aarch64"
 os = "linux"
 libc = "glibc"
-git-tree-sha1 = "1c83f87030328fcf941599be0c00e4cf82c80cab"
+git-tree-sha1 = "dcbcc6407a180ad77580a350068800c8d349499f"
 lazy = true
 
     [[LiteXM2SDR.download]]
-    url = "https://github.com/zsoerenm/LiteXM2SDR.jl/releases/download/litexm2sdr-v0.1.1/LiteXM2SDR.v0.1.0.aarch64-linux-gnu.tar.gz"
-    sha256 = "3963e03d84bcdb6ca784b4a305381378a9729410ff8bfcafd9c7d013a35a4f4e"
+    url = "https://github.com/zsoerenm/LiteXM2SDR.jl/releases/download/litexm2sdr-v0.1.2/LiteXM2SDR.v0.1.0.aarch64-linux-gnu.tar.gz"
+    sha256 = "9a0a478a1d4cfe139bf15dbe61c04ef233d4de03667096e648fa5d53c706a18e"
 
 [[LiteXM2SDR]]
 arch = "aarch64"
 os = "linux"
 libc = "musl"
-git-tree-sha1 = "56e0eecb181ee661f316e7a3b38d8f777e249ca3"
+git-tree-sha1 = "f4afc0581042d2462106aee85dda9f80f0fceb3f"
 lazy = true
 
     [[LiteXM2SDR.download]]
-    url = "https://github.com/zsoerenm/LiteXM2SDR.jl/releases/download/litexm2sdr-v0.1.1/LiteXM2SDR.v0.1.0.aarch64-linux-musl.tar.gz"
-    sha256 = "d531db6316687677e5f5c5ede57b313acd4250358a9f52055ca2536e6e560abe"
+    url = "https://github.com/zsoerenm/LiteXM2SDR.jl/releases/download/litexm2sdr-v0.1.2/LiteXM2SDR.v0.1.0.aarch64-linux-musl.tar.gz"
+    sha256 = "2b16b3f78f2c07e5fa635cd5f81c65467503f1d2fc8492aa1702a75d3cd2d8d4"
 
 [[LiteXM2SDR]]
 arch = "x86_64"
 os = "linux"
 libc = "glibc"
-git-tree-sha1 = "4f7aa3cbc4a4193bafdc391a001094d1afdfa04c"
+git-tree-sha1 = "0d16cba155480d43aa266c001262b7ecafc38f3e"
 lazy = true
 
     [[LiteXM2SDR.download]]
-    url = "https://github.com/zsoerenm/LiteXM2SDR.jl/releases/download/litexm2sdr-v0.1.1/LiteXM2SDR.v0.1.0.x86_64-linux-gnu.tar.gz"
-    sha256 = "99331216538fec64fd54ddaf98d6e7b557dcb63859719e2d9939f4474ca5f836"
+    url = "https://github.com/zsoerenm/LiteXM2SDR.jl/releases/download/litexm2sdr-v0.1.2/LiteXM2SDR.v0.1.0.x86_64-linux-gnu.tar.gz"
+    sha256 = "2178b7bd533d3a5cf2fb928157fa0f3e3376f9a3d034d19d8f1f970ddd512499"
 
 [[LiteXM2SDR]]
 arch = "x86_64"
 os = "linux"
 libc = "musl"
-git-tree-sha1 = "2d7cb2938fb9ae46a9fc0022d2ca4a552c459418"
+git-tree-sha1 = "f047b6ccc7e512a9c07ac31c3dcd7e01b612d639"
 lazy = true
 
     [[LiteXM2SDR.download]]
-    url = "https://github.com/zsoerenm/LiteXM2SDR.jl/releases/download/litexm2sdr-v0.1.1/LiteXM2SDR.v0.1.0.x86_64-linux-musl.tar.gz"
-    sha256 = "2d4a3e878b1e3082913af0b6a927d70dfe952cc632f2d1534227b0a9d19e2314"
+    url = "https://github.com/zsoerenm/LiteXM2SDR.jl/releases/download/litexm2sdr-v0.1.2/LiteXM2SDR.v0.1.0.x86_64-linux-musl.tar.gz"
+    sha256 = "9abbe4c9f620b577e422818b1dd5e69a60737a538a1b5f0b606d0075f4acc141"

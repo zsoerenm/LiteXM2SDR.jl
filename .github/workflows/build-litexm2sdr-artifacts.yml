@@ -228,5 +228,5 @@ jobs:
           else
             git add Artifacts.toml
             git commit -m "Update Artifacts.toml for LiteXM2SDR ${{ steps.version.outputs.version }}"
-            git push origin HEAD:${{ github.ref_name }}
+            git push origin HEAD:main
           fi

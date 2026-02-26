@@ -2,7 +2,7 @@
     LiteXM2SDR_jll
 
 Local artifact-based replacement for LiteXM2SDR_jll.
-Provides `m2sdr_rx_stream_shm` and `m2sdr_tx_stream_shm` executables
+Provides `m2sdr_rx_stream_shm`, `m2sdr_tx_stream_shm`, and `m2sdr_stream_shm` executables
 with the same interface as the official JLL package.
 
 When the official LiteXM2SDR_jll is available in the registry, users can
@@ -13,7 +13,7 @@ module LiteXM2SDR_jll
 using Artifacts
 using Base.BinaryPlatforms: HostPlatform, triplet
 
-export m2sdr_rx_stream_shm, m2sdr_tx_stream_shm
+export m2sdr_rx_stream_shm, m2sdr_tx_stream_shm, m2sdr_stream_shm
 
 # Path to Artifacts.toml in the package root
 const ARTIFACTS_TOML = normpath(joinpath(@__DIR__, "..", "..", "Artifacts.toml"))
@@ -87,6 +87,17 @@ Return a `Cmd` for the m2sdr_tx_stream_shm executable.
 function m2sdr_tx_stream_shm()
     exe = joinpath(get_artifact_dir(), "bin", "m2sdr_tx_stream_shm")
     isfile(exe) || error("m2sdr_tx_stream_shm not found at $exe")
+    return Cmd([exe])
+end
+
+"""
+    m2sdr_stream_shm()
+
+Return a `Cmd` for the m2sdr_stream_shm full-duplex executable.
+"""
+function m2sdr_stream_shm()
+    exe = joinpath(get_artifact_dir(), "bin", "m2sdr_stream_shm")
+    isfile(exe) || error("m2sdr_stream_shm not found at $exe")
     return Cmd([exe])
 end
 

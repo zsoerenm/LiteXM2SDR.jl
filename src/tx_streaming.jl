@@ -113,6 +113,7 @@ function write_to_litex_m2sdr(
     warning_buffer_size::Integer = 16,
     stats_buffer_size::Integer = 1000,
     cmd::Union{Cmd,Nothing} = nothing,
+    realtime_priority::Union{Integer,Nothing} = 80,
 ) where {T<:Union{Complex{Int16},Int16},N}
     if N != 1 && N != 2
         error("Number of channels must be 1 or 2, got $N")
@@ -180,6 +181,13 @@ function write_to_litex_m2sdr(
     end
 
     @info "Starting LiteX M2SDR TX stream" sample_rate frequency gain channels = N
+
+    if realtime_priority !== nothing
+        if !success(`chrt -f $(realtime_priority) true`)
+            error("Cannot set real-time priority (missing CAP_SYS_NICE?). Fix with: sudo setcap cap_sys_nice+ep \$(which julia). Or pass realtime_priority=nothing to disable.")
+        end
+        cmd = `chrt -f $(realtime_priority) $cmd`
+    end
 
     # When not quiet, redirect C process output to a log file since the Julia GUI
     # would otherwise overwrite it. The log file can be monitored with: tail -f /tmp/m2sdr_tx.log

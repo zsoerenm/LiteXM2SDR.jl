@@ -26,6 +26,7 @@ end
             shm_path,
             channel_size=32,
             quiet=true,
+            realtime_priority=nothing,
         )
 
         chunks = collect(ch)
@@ -63,6 +64,7 @@ end
             shm_path,
             channel_size=16,
             quiet=true,
+            realtime_priority=nothing,
         )
 
         chunks = collect(ch)
@@ -89,6 +91,19 @@ end
         end
     end
 
+    @testset "realtime_priority errors without CAP_SYS_NICE" begin
+        shm_path = tempname()
+        mock_cmd = make_mock_rx_cmd(; shm_path, channels=1, chunk_size=64, num_slots=8, num_chunks=1)
+        if !success(`chrt -f 80 true`)
+            @test_throws ErrorException read_from_litex_m2sdr(Val(1);
+                cmd=mock_cmd,
+                shm_path,
+                channel_size=8,
+                quiet=true,
+            )
+        end
+    end
+
     @testset "writer_done terminates cleanly" begin
         shm_path = tempname()
 
@@ -101,6 +116,7 @@ end
             shm_path,
             channel_size=8,
             quiet=true,
+            realtime_priority=nothing,
         )
 
         chunks = collect(ch)

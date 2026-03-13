@@ -282,6 +282,7 @@ function read_from_litex_m2sdr(
     warning_channel_size::Integer = 16,
     quiet::Bool = false,
     cmd::Union{Cmd,Nothing} = nothing,
+    realtime_priority::Union{Integer,Nothing} = 80,
 ) where {N}
     if N != 1 && N != 2
         error("Number of channels must be 1 or 2, got $N")
@@ -322,6 +323,13 @@ function read_from_litex_m2sdr(
     if isfile(shm_path)
         @warn "Removing stale shared memory file" path = shm_path
         rm(shm_path)
+    end
+
+    if realtime_priority !== nothing
+        if !success(`chrt -f $(realtime_priority) true`)
+            error("Cannot set real-time priority (missing CAP_SYS_NICE?). Fix with: sudo setcap cap_sys_nice+ep \$(which julia). Or pass realtime_priority=nothing to disable.")
+        end
+        cmd = `chrt -f $(realtime_priority) $cmd`
     end
 
     # Redirect output to log file
@@ -495,6 +503,7 @@ function read_from_litex_m2sdr(;
     warning_channel_size::Integer = 16,
     quiet::Bool = false,
     cmd::Union{Cmd,Nothing} = nothing,
+    realtime_priority::Union{Integer,Nothing} = 80,
 )
     return read_from_litex_m2sdr(
         Val(1);
@@ -511,6 +520,7 @@ function read_from_litex_m2sdr(;
         warning_channel_size,
         quiet,
         cmd,
+        realtime_priority,
     )
 end
 

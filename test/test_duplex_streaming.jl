@@ -63,6 +63,7 @@ end
             tx_shm_path,
             channel_size = 32,
             quiet = true,
+            realtime_priority = nothing,
         )
 
         # Feed TX data in background
@@ -117,6 +118,26 @@ end
         rm(output_path; force = true)
     end
 
+    @testset "realtime_priority errors without CAP_SYS_NICE" begin
+        rx_shm_path = tempname()
+        tx_shm_path = tempname()
+        mock_cmd = make_mock_duplex_cmd(;
+            rx_shm_path, tx_shm_path, channels=1, chunk_size=64, num_slots=8, num_chunks=1,
+        )
+        signal_ch = SignalChannel{Complex{Int16},1}(64, 8)
+        if !success(`chrt -f 80 true`)
+            @test_throws ErrorException stream_litex_m2sdr(
+                Val(1),
+                signal_ch;
+                cmd=mock_cmd,
+                rx_shm_path,
+                tx_shm_path,
+                channel_size=8,
+                quiet=true,
+            )
+        end
+    end
+
     @testset "two channel full duplex" begin
         rx_shm_path = tempname()
         tx_shm_path = tempname()
@@ -154,6 +175,7 @@ end
             tx_shm_path,
             channel_size = 16,
             quiet = true,
+            realtime_priority = nothing,
         )
 
         tx_task = Threads.@spawn begin
@@ -215,6 +237,7 @@ end
             tx_shm_path,
             channel_size = 8,
             quiet = true,
+            realtime_priority = nothing,
         )
 
         # Feed 3 TX chunks

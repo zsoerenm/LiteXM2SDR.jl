@@ -40,6 +40,7 @@ end
             buffer_time=1u"s",
             sample_rate=1u"MHz",
             quiet=true,
+            realtime_priority=nothing,
         )
 
         # Feed data and close
@@ -103,6 +104,7 @@ end
             buffer_time=1u"s",
             sample_rate=1u"MHz",
             quiet=true,
+            realtime_priority=nothing,
         )
 
         for chunk in test_data
@@ -135,6 +137,21 @@ end
         rm(output_path; force=true)
     end
 
+    @testset "realtime_priority errors without CAP_SYS_NICE" begin
+        shm_path = tempname()
+        mock_cmd = make_mock_tx_cmd(; shm_path)
+        signal_ch = SignalChannel{Complex{Int16},1}(64, 8)
+        if !success(`chrt -f 80 true`)
+            @test_throws ErrorException write_to_litex_m2sdr(signal_ch;
+                cmd=mock_cmd,
+                shm_path,
+                buffer_time=1u"s",
+                sample_rate=1u"MHz",
+                quiet=true,
+            )
+        end
+    end
+
     @testset "stats updates accumulate correctly" begin
         shm_path = tempname()
         chunk_size = 64
@@ -150,6 +167,7 @@ end
             buffer_time=1u"s",
             sample_rate=1u"MHz",
             quiet=true,
+            realtime_priority=nothing,
         )
 
         for k in 1:num_chunks
